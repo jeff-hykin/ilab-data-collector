@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# remove any leftover ones (caused by git merge conflicts)
+git remote remove mixin &>/dev/null
+git remote add mixin "https://github.com/jeff-hykin/projectr"
+git fetch mixin --tags
+git merge --allow-unrelated-histories mixin/master
+git remote remove mixin &>/dev/null
