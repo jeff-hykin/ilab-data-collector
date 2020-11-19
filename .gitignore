@@ -1,6 +1,7 @@
+#
+# Custom
 # 
-# My own
-# 
+\.idea
 *.nosync*
 
 # 
@@ -572,3 +573,21 @@ dkms.conf
 
 # Executables
 *.out
+
+#
+# home folder files
+#
+!settings/home/.zshrc
+settings/home/*
+settings/home/Library/Caches
+# dont remove these next one unless you want passwords to be public
+# these are redundant, but kept as a fail-safe
+settings/home/Library/Keychains
+settings/home/.gnupg
+settings/home/.gnupg_pre_2.1
+settings/home/.npmrc
+settings/home/.vsce
+settings/home/.gitconfig
+settings/home/.mongorc.js
+settings/home/.ungitrc
+settings/home/.vuerc
