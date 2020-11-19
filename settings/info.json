@@ -1,4 +1,10 @@
 {
+    "parameters" : {
+        
+    },
+    "paths": {
+        "videoStorage": "storage.nosync/videos/"
+    },
     "nix": {
         "mainRepo": "a332da8588aeea4feb9359d23f58d95520899e3c",
         "config": {
@@ -8,6 +14,10 @@
             ]
         },
         "packages": [
+            {
+                "load": "cmake",
+                "from": "a332da8588aeea4feb9359d23f58d95520899e3c"
+            },
             {
                 "load": "nodejs",
                 "from": "a332da8588aeea4feb9359d23f58d95520899e3c"

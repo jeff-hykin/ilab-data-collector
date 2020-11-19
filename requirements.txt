@@ -6,3 +6,22 @@ more-itertools @ file:///private/tmp/nix-build-python3.7-more-itertools-8.3.0.dr
 six @ file:///private/tmp/nix-build-python3.7-six-1.15.0.drv-0/six-1.15.0/dist/six-1.15.0-py2.py3-none-any.whl
 virtualenv @ file:///private/tmp/nix-build-python3.7-virtualenv-20.0.28.drv-0/virtualenv-20.0.28/dist/virtualenv-20.0.28-py2.py3-none-any.whl
 zipp @ file:///private/tmp/nix-build-python3.7-zipp-3.1.0.drv-0/zipp-3.1.0/dist/zipp-3.1.0-py3-none-any.whl
+colorama==0.4.3
+certifi==2020.4.5.2
+chardet==3.0.4
+future==0.18.2
+idna==2.9
+numpy==1.18.5
+opencv-python==4.1.2.30
+PyYAML==5.1.2
+regex==2020.6.8
+requests==2.23.0
+rope==0.16.0
+torch==1.5.0
+urllib3==1.25.9
+pandas==0.25.2
+scipy==1.4.1
+scikit-learn==0.22.1
+matplotlib==3.1.1
+python-include==1.0.0
+# dlib==19.20.0
