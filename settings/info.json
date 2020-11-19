@@ -3,7 +3,8 @@
         
     },
     "paths": {
-        "videoStorage": "storage.nosync/videos/"
+        "videoStorage": "source/2_video_files/videos.nosync",
+        "videoIdJson": "source/1_urls/memory.json"
     },
     "nix": {
         "mainRepo": "a332da8588aeea4feb9359d23f58d95520899e3c",
