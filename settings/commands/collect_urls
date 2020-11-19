@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+node ./source/1_urls/collect_urls.js
