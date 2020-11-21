@@ -4,7 +4,16 @@
     },
     "paths": {
         "videoStorage": "source/2_video_files/videos.nosync",
-        "videoIdJson": "source/1_urls/memory.json"
+        "videoIdJson": "source/1_urls/memory.json",
+        "haarcascade_frontalface_default": "./toolbox/face_tools/haarcascade_frontalface_default.xml",
+        "feature_file.npz": "./toolbox/face_tools/recognition/feature_file.npz",
+        "emotion_model": "./toolbox/face_tools/expressions/emotion_model",
+        "recognition_checkpoint_state": "./toolbox/face_tools/recognition/expressions/models",
+        "mtcnn_face_model": "./toolbox/face_tools/recognition/recognition/face_deploy.prototxt",
+        "mtcnn_face_weights": "./toolbox/face_tools/recognition/recognition/85_accuracy.nosync.caffemodel",
+        "caffe_model_path": "./toolbox/face_tools/recognition/detection/",
+        "test_model.t7": "./toolbox/face_tools/expressions/test_model.t7",
+        "GenFeature_input_folder": "./database/user_images/"
     },
     "nix": {
         "mainRepo": "a332da8588aeea4feb9359d23f58d95520899e3c",

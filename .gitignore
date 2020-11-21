@@ -3,6 +3,7 @@
 # 
 \.idea
 *.nosync*
+**/test_model.t7
 
 # 
 # Linux
