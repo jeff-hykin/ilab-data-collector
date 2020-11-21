@@ -9,8 +9,8 @@ import time
 from time import sleep
 
 # relative imports
-import toolbox.face_tools.recognition.GenFeature as genfeat
-import toolbox.face_tools.recognition.MTCNN as mtcnn
+import toolbox.face_tools.recognition.gen_feature as genfeat
+import toolbox.face_tools.recognition.mtcnn as mtcnn
 from toolbox.globals import PATHS, FS
 
 feature_file = np.load(PATHS["feature_file.npz"])

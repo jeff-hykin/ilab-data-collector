@@ -6,10 +6,10 @@ import cv2
 import os
 import glob
 import pickle
-import toolbox.face_tools.recognition.MTCNN as mtcnn
+import toolbox.face_tools.recognition.mtcnn as mtcnn
 
 data_dump = {}
-input_data_dir = PATHS["GenFeature_input_folder"]
+input_data_dir = PATHS["gen_feature_input_folder"]
 
 def generate_features():
     input_files = glob.glob(input_data_dir + "/*.jpg")
