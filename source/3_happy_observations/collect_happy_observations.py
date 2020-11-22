@@ -10,7 +10,7 @@ import cv2
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 def get_faces(image):
     face_dimensions = face_cascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=1, minSize=(100, 100), flags=cv2.CASCADE_SCALE_IMAGE)
-    cropped_faces = [ image[y:y + h, x:x + w] for x, y, w, h in face_dimensions ]
+    cropped_faces = [ image[ y : y+h , x : x+w ] for x, y, w, h in face_dimensions ]
     return cropped_faces, face_dimensions
 
 # TODO: keep track of which videos are done
@@ -42,7 +42,8 @@ while True:
                 print('duration = ', duration)
                 frame_count = 0
                 for each_frame in video.frames():
-                    print('frame_count = ', frame_count)
+                    if frame_count % 200 == 0:
+                        print('frame_count = ', frame_count)
                     frame_count += 1
                     emotion_value = 0
                     cropped_faces, face_dimensions = get_faces(each_frame)
