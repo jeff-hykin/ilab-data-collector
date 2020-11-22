@@ -5,7 +5,7 @@ import math
 #     print(get_moments([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,1,1,1,0,0,0,0,0.6]) == [(7, 33)])
 #     print(get_moments([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,0,0,1,0,0,0,0,0.6,0,0,]) == [(7, 28)])
 
-def get_moments(list_of_confidences, threshold=0.5):
+def logarithmic_cluster(list_of_confidences, threshold=0.5):
     """
     list_of_confidences: list of values between 0 and 1
     threshold: a value between 0 and 1
@@ -71,26 +71,28 @@ def get_moments(list_of_confidences, threshold=0.5):
         add_back = group[0:amount_to_trim]
         group = group[amount_to_trim:]
         group.reverse()
-        return average, add_back+remaining_values, group
+        confidence = sum(group)/len(group) if len(group) > 0 else 0
+        return average, add_back+remaining_values, group, confidence
     
     # the negative form of the remaining values
     index = 0
     average = 0
     remaining_values = list_of_confidences
     results = []
+    confidences = []
     while len(remaining_values) > 0:
         # get a group, once the group is found flop back to the other side
-        average, remaining_values, group = next_group(average, remaining_values)
+        average, remaining_values, group, confidence = next_group(average, remaining_values)
         results.append((index, index+len(group)))
+        confidences.append(confidence)
         index += len(group)
         # switch sides
         threshold = 1-threshold
         remaining_values = [ 1-each for each in remaining_values ]
-    
     positive_groups = results[::2]
     # remove 0 length groups
     positive_groups = [ each for each in positive_groups if each[0] != each[1] ]
     
-    return positive_groups
+    return positive_groups, confidences
 
 

@@ -16,7 +16,8 @@ setTimeout(async () => {
             let urls = Object.keys(memory.urls)
             // log every 100 iterations
             ;(iteration++ % 100 == 0) && console.log(`${urls.length} urls`)
-            let randomUrl = urls[Math.floor(Math.random() * urls.length)]
+            // let randomUrl = urls[Math.floor(Math.random() * urls.length)]
+            let randomUrl = "https://www.youtuberandom.com/"
             let html = await getHtmlFor(randomUrl)
 
 
