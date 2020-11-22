@@ -43,7 +43,7 @@ let numberOfConcurrentFunctions = 1 // number of simultaneous video downloads
                     // try downloading the video
                     // 
                     try {
-                        await new Promise((resolve, reject)=>ytdl(randomId).pipe(fs.createWriteStream(`${PATHS.videoStorage}/${randomId}.mp4`)).on('close',resolve))
+                        await new Promise((resolve, reject)=>ytdl(randomId).pipe(fs.createWriteStream(`${PATHS.videoStorage}/${randomId}.mp4`)).on('close',resolve).on('error', reject))
                     } catch (error) {
                         console.log(`error downloading ${randomId}`)
                     }
