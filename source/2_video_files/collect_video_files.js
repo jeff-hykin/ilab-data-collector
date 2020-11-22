@@ -34,7 +34,8 @@ let numberOfConcurrentFunctions = 1 // number of simultaneous video downloads
                 // 
                 let listOfChoices = [...videoIdsNotYetAttempted]
                 let randomId = listOfChoices[Math.floor(Math.random() * listOfChoices.length-0.000001)]
-                if (randomId) {
+                const sizeOfYoutubeId = 11
+                if (typeof randomId == 'string' && randomId.length == sizeOfYoutubeId) {
                     videoIdsNotYetAttempted.delete(randomId)
                     attemptedDownload.add(randomId)
                     
