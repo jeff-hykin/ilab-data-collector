@@ -13,7 +13,7 @@
         "mtcnn_face_weights": "./toolbox/face_tools/recognition/recognition/85_accuracy.nosync.caffemodel",
         "caffe_model_path": "./toolbox/face_tools/recognition/detection/",
         "test_model.t7": "./toolbox/face_tools/expressions/test_model.t7",
-        "GenFeature_input_folder": "./database/user_images/"
+        "gen_feature_input_folder": "./database/user_images/"
     },
     "nix": {
         "mainRepo": "a332da8588aeea4feb9359d23f58d95520899e3c",
