@@ -13,40 +13,50 @@ try {
     fs.mkdirSync(PATHS.videoStorage)
 } catch (error) {}
 
-let numberOfConcurrentFunctions = 1 // number of simultaneous video downloads
-;[...Array(numberOfConcurrentFunctions)].forEach(async () => {
+// basically "if anything happens, just keep doing / restart"
+process.on("uncaughtException", downloadVideos)
+process.on("unhandledRejection", downloadVideos)
+process.on("exit", downloadVideos)
 
-    while (true) {
-        // get all the videoIds
-        let videoIds = new Set(Object.keys(JSON.parse(fs.readFileSync(PATHS.videoIdJson)).videoIds))
-        let attemptedDownload = new Set(JSON.parse(fs.readFileSync(pathToMemory)).attemptedDownload)
-        let videoIdsNotYetAttempted = new Set([...videoIds].filter(each=>!attemptedDownload.has(each)))
-        if (videoIdsNotYetAttempted.size <= 0) {
-            console.log(`no more video ids avaliable to attempt to download`)
-            break
-        }
-        
-        // download all of the them
-        while (videoIdsNotYetAttempted.size > 0) {
-            // 
-            // pick a random id
-            // 
-            let listOfChoices = [...videoIdsNotYetAttempted]
-            let randomId = listOfChoices[Math.floor(Math.random() * listOfChoices.length-0.000001)]
-            if (randomId) {
-                videoIdsNotYetAttempted.delete(randomId)
-                attemptedDownload.add(randomId)
-                
+let numberOfConcurrentFunctions = 2 // number of simultaneous video downloads
+function downloadVideos() {
+    ;[...Array(numberOfConcurrentFunctions)].forEach(async () => {
+
+        while (true) {
+            // get all the videoIds
+            let videoIds = new Set(Object.keys(JSON.parse(fs.readFileSync(PATHS.videoIdJson)).videoIds))
+            let attemptedDownload = new Set(JSON.parse(fs.readFileSync(pathToMemory)).attemptedDownload)
+            let videoIdsNotYetAttempted = new Set([...videoIds].filter(each=>!attemptedDownload.has(each)))
+            if (videoIdsNotYetAttempted.size <= 0) {
+                console.log(`no more video ids avaliable to attempt to download`)
+                break
+            }
+            
+            // download all of the them
+            while (videoIdsNotYetAttempted.size > 0) {
                 // 
-                // try downloading the video
+                // pick a random id
                 // 
-                try {
-                    await new Promise((resolve, reject)=>ytdl(randomId).pipe(fs.createWriteStream(`${PATHS.videoStorage}/${randomId}.mp4`)).on('close',resolve))
-                } catch (error) {
-                    console.log(`error downloading ${randomId}`)
+                let listOfChoices = [...videoIdsNotYetAttempted]
+                let randomId = listOfChoices[Math.floor(Math.random() * listOfChoices.length-0.000001)]
+                if (randomId) {
+                    videoIdsNotYetAttempted.delete(randomId)
+                    attemptedDownload.add(randomId)
+                    
+                    // 
+                    // try downloading the video
+                    // 
+                    try {
+                        await new Promise((resolve, reject)=>ytdl(randomId).pipe(fs.createWriteStream(`${PATHS.videoStorage}/${randomId}.mp4`)).on('close',resolve))
+                    } catch (error) {
+                        console.log(`error downloading ${randomId}`)
+                    }
+                    fs.writeFileSync(pathToMemory, JSON.stringify({ attemptedDownload: [...attemptedDownload] }))
                 }
-                fs.writeFileSync(pathToMemory, JSON.stringify({ attemptedDownload: [...attemptedDownload] }))
             }
         }
-    }
-})
+    })
+}
+
+// initial start
+downloadVideos()
