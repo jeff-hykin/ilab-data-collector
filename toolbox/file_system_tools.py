@@ -150,7 +150,6 @@ class FileSystem():
         example:
             *folders, file_name, file_extension = self.path_pieces("/this/is/a/filepath.txt")
         """
-        path = self.process_path(path)
         folders = []
         while 1:
             path, folder = os.path.split(path)

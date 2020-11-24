@@ -1,6 +1,6 @@
 import traceback 
 import json
-from toolbox.globals import INFO, PATHS, PARAMETERS, FS
+from toolbox.globals import INFO, PATHS, PARAMETERS, FSL
 from toolbox.video_tools import Video
 from toolbox.face_tools.expressions.Facial_expressions_detection import network_output as get_emotion_data
 from toolbox.face_tools.expressions.Facial_expressions_detection import preprocess_face
@@ -13,27 +13,24 @@ def get_faces(image):
     cropped_faces = [ image[ y : y+h , x : x+w ] for x, y, w, h in face_dimensions ]
     return cropped_faces, face_dimensions
 
-# TODO: keep track of which videos are done
-
 moments = []
 which_emotion = "happy"
-done_videos = set()
+done_videos = set(json.loads(FSL.read("./memory.json")))
 # busy wait for more videos
 while True:
-    for video_path in FS.list_files(PATHS["videoStorage"]):
+    print("getting video list files")
+    for video_path in FSL.list_files(PATHS["videoStorage"]):
         try:
             # don't repeat videos
             if video_path in done_videos:
                 continue
-            else:
-                done_videos.add(video_path)
 
-            *folders, filename, ext = FS.path_pieces(video_path)
+            *folders, filename, ext = FSL.path_pieces(video_path)
             # 
             # Scan Video
             # 
-            video = Video(video_path)
             print('filename = ', filename)
+            video = Video(video_path)
             emotion_strength_per_frame = []
             max_duration = 11 * 60 # seconds
             min_duration = 5 * 60 # seconds
@@ -80,13 +77,14 @@ while True:
                         "endTime": each_time_segment[1],
                     })
                 print("saving")
-                FS.write(json.dumps(moments), to=FS.join(FS.dirname(__file__),"moments.json"))
-                
+                done_videos.add(video_path)
+                FSL.write(json.dumps(moments),     to="moments.json")
+                FSL.write(json.dumps(list(done_videos)), to="memory.json")
             else:
                 print("video skipped")
             
             # remove the video after it has been processed
-            FS.delete(video_path)
+            FSL.delete(video_path)
         except Exception as error:
             print('error = ', error)
             traceback.print_exc() 
