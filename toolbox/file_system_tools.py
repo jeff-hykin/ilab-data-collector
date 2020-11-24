@@ -1,38 +1,38 @@
-import sys
-import os
-from os.path import isabs, isfile, isdir, join, dirname, basename, exists, splitext, relpath
-from os import remove, getcwd, makedirs, listdir, rename, rmdir, system
-from shutil import move
+from os.path import isdir
 from pathlib import Path
 import glob
-import regex as re
-import numpy as np
-import numpy
-import pickle
-import random
-import itertools
-import time
-import subprocess
-from subprocess import call
-import json
-import cv2 as cv
-import cv2
-import yaml
+import os
 import shutil
 
-# 
-# create a class for generate filesystemtem management
-# 
 class FileSystem():
-    @classmethod
+    def __init__(self, use_localpath=False):
+        def process_path(path):
+            import os
+            if type(path) != str:
+                return path
+            if os.path.isabs(path):
+                return path
+            if use_localpath:
+                return self.relative_to_caller(path, go_up=1)
+            else:
+                return os.path.abspath(path)
+                
+        self.process_path = process_path
+        
+        # aliases
+        self.is_folder = self.is_directory
+        self.is_dir    = self.is_directory
+        self.glob      = glob.glob
+        
     def write(self, data, to=None):
+        to = self.process_path(to)
         # make sure the path exists
-        FileSystem.makedirs(os.path.dirname(to))
+        self.makedirs(os.path.dirname(to))
         with open(to, 'w') as the_file:
             the_file.write(str(data))
     
-    @classmethod
     def read(self, filepath):
+        filepath = self.process_path(filepath)
         try:
             with open(filepath,'r') as f:
                 output = f.read()
@@ -40,8 +40,8 @@ class FileSystem():
             output = None
         return output    
         
-    @classmethod
     def delete(self, filepath):
+        filepath = self.process_path(filepath)
         if isdir(filepath):
             shutil.rmtree(filepath)
         else:
@@ -50,113 +50,107 @@ class FileSystem():
             except:
                 pass
     
-    @classmethod
     def makedirs(self, path):
+        path = self.process_path(path)
         try:
             os.makedirs(path)
         except:
             pass
         
-    @classmethod
-    def copy(self, from_=None, to=None, new_name="", force= True):
+    def copy(self, original=None, to=None, new_name="", force=True):
+        original = self.process_path(original)
+        to = self.process_path(to)
+        # failsafe for new name
         if new_name == "":
-            raise Exception('FileSystem.copy() needs a new_name= argument:\n    FileSystem.copy(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
+            raise Exception('self.copy() needs a new_name= argument:\n    self.copy(original="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
         elif new_name is None:
-            new_name = os.path.basename(from_)
+            new_name = os.path.basename(original)
         
         # get the full path
         to = os.path.join(to, new_name)
         # if theres a file in the target, delete it
-        if force and FileSystem.exists(to):
-            FileSystem.delete(to)
+        if force and self.exists(to):
+            self.delete(to)
         # make sure the containing folder exists
-        FileSystem.makedirs(os.path.dirname(to))
-        if os.path.isdir(from_):
-            shutil.copytree(from_, to)
+        self.makedirs(os.path.dirname(to))
+        if os.path.isdir(original):
+            shutil.copytree(original, to)
         else:
-            return shutil.copy(from_, to)
+            return shutil.copy(original, to)
     
-    @classmethod
-    def move(self, from_=None, to=None, new_name="", force= True):
+    def move(self, original=None, to=None, new_name="", force= True):
+        original = self.process_path(original)
+        to = self.process_path(to)
         if new_name == "":
-            raise Exception('FileSystem.move() needs a new_name= argument:\n    FileSystem.move(from_="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
+            raise Exception('self.move() needs a new_name= argument:\n    self.move(original="location", to="directory", new_name="")\nif you want the name to be the same as before do new_name=None')
         elif new_name is None:
-            new_name = os.path.basename(from_)
+            new_name = os.path.basename(original)
         
         # get the full path
         to = os.path.join(to, new_name)
         # make sure the containing folder exists
-        FileSystem.makedirs(os.path.dirname(to))
-        shutil.move(from_, to)
+        self.makedirs(os.path.dirname(to))
+        shutil.move(original, to)
     
-    @classmethod
-    def exists(self, *args):
-        return FileSystem.does_exist(*args)
-    
-    @classmethod
-    def does_exist(self, path):
+    def exists(self, path):
+        path = self.process_path(path)
         return os.path.exists(path)
-    
-    @classmethod
-    def is_folder(self, *args):
-        return FileSystem.is_directory(*args)
         
-    @classmethod
-    def is_dir(self, *args):
-        return FileSystem.is_directory(*args)
-        
-    @classmethod
     def is_directory(self, path):
+        path = self.process_path(path)
         return os.path.isdir(path)
     
-    @classmethod
     def is_file(self, path):
+        path = self.process_path(path)
         return os.path.isfile(path)
 
-    @classmethod
     def list_files(self, path="."):
-        return [ x for x in FileSystem.ls(path) if FileSystem.is_file(x) ]
+        path = self.process_path(path)
+        return [ x for x in self.ls(path) if self.is_file(x) ]
     
-    @classmethod
     def list_folders(self, path="."):
-        return [ x for x in FileSystem.ls(path) if FileSystem.is_folder(x) ]
+        path = self.process_path(path)
+        return [ x for x in self.ls(path) if self.is_folder(x) ]
     
-    @classmethod
+    def glob(self, *args, **kwargs):
+        return glob.glob(*args, **kwargs)
+        
     def ls(self, filepath="."):
+        filepath = self.process_path(filepath)
         glob_val = filepath
         if os.path.isdir(filepath):
             glob_val = os.path.join(filepath, "*")
         return glob.glob(glob_val)
 
-    @classmethod
     def touch(self, path):
-        FileSystem.makedirs(FileSystem.dirname(path))
-        if not FileSystem.exists(path):
-            FileSystem.write("", to=path)
+        path = self.process_path(path)
+        self.makedirs(self.dirname(path))
+        if not self.exists(path):
+            self.write("", to=path)
     
-    @classmethod
     def touch_dir(self, path):
-        FileSystem.makedirs(path)
+        path = self.process_path(path)
+        self.makedirs(path)
     
-    @classmethod
     def dirname(self, path):
+        path = self.process_path(path)
         return os.path.dirname(path)
     
-    @classmethod
     def basename(self, path):
+        path = self.process_path(path)
         return os.path.basename(path)
     
-    @classmethod
     def extname(self, path):
+        path = self.process_path(path)
         filename, file_extension = os.path.splitext(path)
         return file_extension
     
-    @classmethod
     def path_pieces(self, path):
         """
         example:
-            *folders, file_name, file_extension = FileSystem.path_pieces("/this/is/a/filepath.txt")
+            *folders, file_name, file_extension = self.path_pieces("/this/is/a/filepath.txt")
         """
+        path = self.process_path(path)
         folders = []
         while 1:
             path, folder = os.path.split(path)
@@ -173,16 +167,43 @@ class FileSystem():
         filename, file_extension = os.path.splitext(file)
         return [ *folders, filename, file_extension ]
     
-    @classmethod
     def join(self, *paths):
         return os.path.join(*paths)
     
-    @classmethod
-    def absolute_path(self, path):
+    def relative_to_caller(self, path, go_up=0):
+        import os
+        import inspect
+        the_stack = inspect.stack()[2+go_up]
+        the_module = inspect.getmodule(the_stack[0])
+        if the_module == None:
+            parent_path = os.getcwd()
+        else:
+            parent_path = os.path.dirname(the_module.__file__)
+        return os.path.join(parent_path, path)
+        
+    def make_absolute_path(self, path):
+        path = self.process_path(path)
         return os.path.abspath(path)
 
-    @classmethod
+    def isabsolute_path(self, path):
+        return os.path.isabs(self.process_path(path))
+
     def pwd(self):
         return os.getcwd()
+    
+    def size(self, path):
+        """
+        returns size in bytes of either a folder or a file
+        """
+        path = self.process_path(path)
+        if self.is_file(path):
+            return os.path.getsize(path)
+        else:
+            total_size = 0
+            for each_path in Path(path).glob('**/*'):
+                total_size += os.path.getsize(each_path)
+        
+        return total_size
 
-FS = FileSystem
+FS = FileSystem()
+FSL = FileSystem(use_localpath=True)
