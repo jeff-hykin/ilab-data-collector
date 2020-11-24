@@ -62,6 +62,8 @@ class Video(object):
         """
         video_capture = cv2.VideoCapture(self.path)
         fps = video_capture.get(cv2.CAP_PROP_FPS)
+        if fps == 0:
+            raise Exception("Unable to get video duration.\nThe FPS of the video is used to calculate duration, however this video returned an FPS of 0.")
         total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
         duration = float(total_number_of_frames) / float(fps)
         video_capture.release()
