@@ -84,6 +84,9 @@ while True:
                 
             else:
                 print("video skipped")
+            
+            # remove the video after it has been processed
+            FS.delete(video_path)
         except Exception as error:
             print('error = ', error)
             traceback.print_exc() 
