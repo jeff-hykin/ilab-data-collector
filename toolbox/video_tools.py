@@ -1,4 +1,4 @@
-from subprocess import call
+import subprocess
 import cv2
 # local imports
 from toolbox.file_system_tools import FS
@@ -14,14 +14,6 @@ class Video(object):
         """
         if not FS.is_file(self.path):
             raise Exception(f"Error, tried opening {self.path} but I don't think that is a file")
-        
-        # detect type
-        *folders, file_name, file_extension = FS.path_pieces(self.path)
-        # video_format = None
-        # print('file_extension = ', file_extension)
-        # if file_extension == ".avi":
-        #     video_format = cv2.VideoWriter_fourcc(*'aaaa')
-        # print('video_format = ', video_format)
         
         # Path to video file 
         video_capture = cv2.VideoCapture(self.path)
@@ -63,7 +55,9 @@ class Video(object):
         video_capture = cv2.VideoCapture(self.path)
         fps = video_capture.get(cv2.CAP_PROP_FPS)
         if fps == 0:
-            raise Exception("Unable to get video duration.\nThe FPS of the video is used to calculate duration, however this video returned an FPS of 0.")
+            # failed, try backup plan of using ffmpeg directly
+            duration_string = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.path], capture_output=True)
+            return float(duration_string)
         total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
         duration = float(total_number_of_frames) / float(fps)
         video_capture.release()
