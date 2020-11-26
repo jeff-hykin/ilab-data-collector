@@ -48,6 +48,7 @@ while True:
             except:
                 print(f"couldn't get duration for {filename}, probably corrupt, deleting {filename}")
                 FSL.delete(video_path)
+                continue
                 
             max_duration = 11 * 60 # seconds
             min_duration = 5 * 60 # seconds
