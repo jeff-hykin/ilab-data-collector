@@ -126,7 +126,7 @@ while True:
                             "confirmedBySomeone": False,
                             "rejectedBySomeone": False,
                             "observation": {
-                                "label": duration_of_single_frame,
+                                "label": label_name,
                                 "labelConfidence": normalized_video_confidence,
                             },
                         })
