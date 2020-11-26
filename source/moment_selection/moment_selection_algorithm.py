@@ -1,14 +1,15 @@
 import math
 
 # example cases:
-#     print(get_moments([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,0,0,1,0,0,0,0,0.6,]) == [(7, 28), (32, 33)])
-#     print(get_moments([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,1,1,1,0,0,0,0,0.6]) == [(7, 33)])
-#     print(get_moments([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,0,0,1,0,0,0,0,0.6,0,0,]) == [(7, 28)])
+#     print(logarithmic_cluster([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,0,0,1,0,0,0,0,0.6,]))     # >>> [(7, 28, 0.64), (32, 33, 0.6)]
+#     print(logarithmic_cluster([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,1,1,1,0,0,0,0,0.6]))      # >>> [(7, 33, 0.6169230769230769)]
+#     print(logarithmic_cluster([0,0,0,0.49,0,0,0.5,1,1,1,1,1,1,1,0.44,1,1,0,1,0,1,0,0,1,0,0,0,1,0,0,0,0,0.6,0,0,])) # >>> [(7, 28, 0.64)]
 
 def logarithmic_cluster(list_of_confidences, threshold=0.5):
     """
     list_of_confidences: list of values between 0 and 1
     threshold: a value between 0 and 1
+    returns: [ (start_index, end_index, confidence), ... ]
     """
     # think of this as getting a group that is on average above the threshold
     # BUT instead of counting new values as equally important
@@ -60,7 +61,7 @@ def logarithmic_cluster(list_of_confidences, threshold=0.5):
                 break
         group = original[0:(original_size-len(remaining_values))]
         # 
-        # trim back (group grabs too much typically, espcially long groups)
+        # trim back (group grabs too much typically, especially long groups)
         # 
         group.reverse()
         amount_to_trim = 0
@@ -79,12 +80,10 @@ def logarithmic_cluster(list_of_confidences, threshold=0.5):
     average = 0
     remaining_values = list_of_confidences
     results = []
-    confidences = []
     while len(remaining_values) > 0:
         # get a group, once the group is found flop back to the other side
         average, remaining_values, group, confidence = next_group(average, remaining_values)
-        results.append((index, index+len(group)))
-        confidences.append(confidence)
+        results.append((index, index+len(group), confidence))
         index += len(group)
         # switch sides
         threshold = 1-threshold
@@ -93,6 +92,4 @@ def logarithmic_cluster(list_of_confidences, threshold=0.5):
     # remove 0 length groups
     positive_groups = [ each for each in positive_groups if each[0] != each[1] ]
     
-    return positive_groups, confidences
-
-
+    return positive_groups

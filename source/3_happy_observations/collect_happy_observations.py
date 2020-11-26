@@ -53,15 +53,17 @@ while True:
                     
                 duration_of_single_frame = (duration+0.0) / frame_count
                 print('emotion_strength_per_frame = ', emotion_strength_per_frame[:10])
-                clusters_of_frames, confidences = logarithmic_cluster(emotion_strength_per_frame)
+                clusters  = logarithmic_cluster(emotion_strength_per_frame)
+                # convert frame-indicies into timestamps
                 time_segments = [
                     (
                         each_start*duration_of_single_frame,
                         each_end*duration_of_single_frame,
-                    ) for each_start, each_end in clusters_of_frames
+                        each_confidence,
+                    ) for each_start, each_end, each_confidence in clusters
                 ]
                 print('time_segments = ', time_segments)
-                for each_time_segment, confidence in zip(time_segments, confidences):
+                for each_start, each_end, each_confidence in clusters:
                     moments.append({
                         "type": "segment",
                         "videoId": filename,
@@ -70,11 +72,11 @@ while True:
                         "confirmedBySomeone": False,
                         "rejectedBySomeone": False,
                         "observation": {
-                            "label": "happy",
-                            "labelConfidence": confidence,
+                            "label": "Happy",
+                            "labelConfidence": each_confidence,
                         },
-                        "startTime": each_time_segment[0],
-                        "endTime": each_time_segment[1],
+                        "startTime": each_start,
+                        "endTime": each_end,
                     })
                 print("saving")
                 done_videos.add(video_path)
