@@ -53,13 +53,18 @@ class Video(object):
         returns the duration of the video in seconds (float)
         """
         video_capture = cv2.VideoCapture(self.path)
-        fps = video_capture.get(cv2.CAP_PROP_FPS)
-        if fps == 0:
-            # failed, try backup plan of using ffmpeg directly
-            duration_string = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.path], capture_output=True)
-            return float(duration_string.stdout.decode('UTF-8'))
-        total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
-        duration = float(total_number_of_frames) / float(fps)
+        duration = None
+        try:
+            fps = video_capture.get(cv2.CAP_PROP_FPS)
+            # if failed, try backup plan of using ffmpeg directly
+            if fps == 0:
+                duration_string = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.path], capture_output=True)
+                return  float(duration_string.stdout.decode('UTF-8'))
+            total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
+            duration = float(total_number_of_frames) / float(fps)
+        except Exception as error:
+            raise Exception(f"Unable to get duration from video {self.path}", error)
+        # always release the video
         video_capture.release()
         return duration
         
