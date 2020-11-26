@@ -13,8 +13,8 @@ def get_faces(image):
     cropped_faces = [ image[ y : y+h , x : x+w ] for x, y, w, h in face_dimensions ]
     return cropped_faces, face_dimensions
 
-moments = []
-which_emotion = "happy"
+observer = "haarcascade-vgg16-v2"
+observation_entries = []
 done_videos = set(json.loads(FSL.read("./memory.json")))
 # busy wait for more videos
 while True:
@@ -31,7 +31,18 @@ while True:
             # 
             print('filename = ', filename)
             video = Video(video_path)
-            emotion_strength_per_frame = []
+            emotion_strengths_per_frame = {
+                "neutral": [],
+                "happy": [],
+                "sad": [],
+                "surprise": [],
+                "fear": [],
+                "disgust": [],
+                "anger": [],
+                "contempt": [],
+                "none": [],
+                "uncertain": [],
+            }
             max_duration = 11 * 60 # seconds
             min_duration = 5 * 60 # seconds
             duration     = video.duration()
@@ -42,46 +53,87 @@ while True:
                     if frame_count % 200 == 0:
                         print('frame_count = ', frame_count)
                     frame_count += 1
-                    emotion_value = 0
+                    emotion_values = {
+                        "neutral": 0,
+                        "disgust": 0,
+                        "surprise": 0,
+                        "contempt": 0,
+                        "anger": 0,
+                        "happy": 0,
+                        "sad": 0,
+                        "fear": 0,
+                        "none": 0,
+                        "uncertain": 0,
+                    }
                     cropped_faces, face_dimensions = get_faces(each_frame)
                     for each_face in cropped_faces:
                         emotion_data = get_emotion_data(preprocess_face(each_face))
-                        # opt for the largest value in the frame
-                        if emotion_data["probabilities"][which_emotion] > emotion_value:
-                            emotion_value = emotion_data["probabilities"]["happy"]
-                    emotion_strength_per_frame.append(emotion_value/100.0)
-                    
+                        for each_emotion_name in emotion_values.keys():
+                            # opt for the largest value in the frame
+                            if emotion_data["probabilities"][each_emotion_name] > emotion_values:
+                                emotion_values = emotion_data["probabilities"][each_emotion_name]
+                    for each_emotion_name in emotion_strengths_per_frame.keys():
+                        emotion_strengths_per_frame[each_emotion_name].append(emotion_values[each_emotion_name]/100.0)
+                
                 duration_of_single_frame = (duration+0.0) / frame_count
-                print('emotion_strength_per_frame = ', emotion_strength_per_frame[:10])
-                clusters  = logarithmic_cluster(emotion_strength_per_frame)
-                # convert frame-indicies into timestamps
-                time_segments = [
-                    (
-                        each_start*duration_of_single_frame,
-                        each_end*duration_of_single_frame,
-                        each_confidence,
-                    ) for each_start, each_end, each_confidence in clusters
-                ]
-                print('time_segments = ', time_segments)
-                for each_start, each_end, each_confidence in clusters:
-                    moments.append({
-                        "type": "segment",
-                        "videoId": filename,
-                        "observer": "haarcascade-vgg16-v1",
-                        "isHuman": False,
-                        "confirmedBySomeone": False,
-                        "rejectedBySomeone": False,
-                        "observation": {
-                            "label": "Happy",
-                            "labelConfidence": each_confidence,
-                        },
-                        "startTime": each_start,
-                        "endTime": each_end,
-                    })
+                def compute_emotions(label_name, emotion_strength_per_frame):
+                    print('emotion_strength_per_frame[:10] = ', emotion_strength_per_frame[:10])
+                    clusters  = logarithmic_cluster(emotion_strength_per_frame)
+                    # convert frame-indicies into timestamps
+                    time_segments = [
+                        (
+                            each_start*duration_of_single_frame,
+                            each_end*duration_of_single_frame,
+                            each_confidence,
+                        ) for each_start, each_end, each_confidence in clusters
+                    ]
+                    print('time_segments = ', time_segments)
+                    for each_start, each_end, each_confidence in clusters:
+                        # because the threshold is 0.5, the confidence will always be
+                        # above 0.5, this normalized confidence just puts the remaining +0.5
+                        # on a 0-1 scale
+                        normalized_confidence = (each_confidence - 0.4999999999999) * 2
+                        observation_entries.append({
+                            "type": "segment",
+                            "videoId": filename,
+                            "observer": observer,
+                            "isHuman": False,
+                            "confirmedBySomeone": False,
+                            "rejectedBySomeone": False,
+                            "observation": {
+                                "label": label_name,
+                                "labelConfidence": normalized_confidence,
+                            },
+                            "startTime": each_start,
+                            "endTime": each_end,
+                        })
+                    # if no clusters were found
+                    if len(clusters) == 0:
+                        average_non_confidence = sum(emotion_strength_per_frame)/len(emotion_strength_per_frame)
+                        # change the 0 to 1 scale to a -1 to 1 scale
+                        # this value should always end up being negative
+                        # otherwise it would've been on-average above the threshold
+                        normalized_video_confidence = (average_non_confidence*2)-1
+                        observation_entries.append({
+                            "type": "video",
+                            "videoId": filename,
+                            "observer": observer,
+                            "isHuman": False,
+                            "confirmedBySomeone": False,
+                            "rejectedBySomeone": False,
+                            "observation": {
+                                "label": duration_of_single_frame,
+                                "labelConfidence": normalized_video_confidence,
+                            },
+                        })
+                # do it for each emotion
+                for each_name, each_emotion_strength_per_frame in emotion_strengths_per_frame.items():
+                    compute_emotions(each_name.capitalize(), each_emotion_strength_per_frame)
+                
                 print("saving")
                 done_videos.add(video_path)
-                FSL.write(json.dumps(moments),     to="moments.json")
-                FSL.write(json.dumps(list(done_videos)), to="memory.json")
+                FSL.write(json.dumps(observation_entries), to="observation_entries.json")
+                FSL.write(json.dumps(list(done_videos)),   to="memory.json")
             else:
                 print("video skipped")
             
