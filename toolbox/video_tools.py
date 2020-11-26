@@ -54,15 +54,18 @@ class Video(object):
         """
         video_capture = cv2.VideoCapture(self.path)
         duration = None
+        duration_string = None
         try:
             fps = video_capture.get(cv2.CAP_PROP_FPS)
             # if failed, try backup plan of using ffmpeg directly
-            if fps == 0:
-                duration_string = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.path], capture_output=True)
-                return  float(duration_string.stdout.decode('UTF-8'))
+            if fps >= 0:
+                duration_process = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.path], capture_output=True)
+                duration_string = duration_process.stdout.decode('UTF-8')
+                return float(duration_string)
             total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
             duration = float(total_number_of_frames) / float(fps)
         except Exception as error:
+            print('duration_string = ', duration_string)
             raise Exception(f"Unable to get duration from video {self.path}", error)
         # always release the video
         video_capture.release()
