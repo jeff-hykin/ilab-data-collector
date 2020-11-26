@@ -65,7 +65,6 @@ class Video(object):
             total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
             duration = float(total_number_of_frames) / float(fps)
         except Exception as error:
-            print('duration_string = ', duration_string)
             raise Exception(f"Unable to get duration from video {self.path}", error)
         # always release the video
         video_capture.release()

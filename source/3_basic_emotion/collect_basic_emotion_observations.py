@@ -41,9 +41,16 @@ while True:
                 "anger": [],
                 "contempt": [],
             }
+            # try to get the duration, but if not, the delete the video file
+            # cause it is probably corrupt
+            try:
+                duration = video.duration()
+            except:
+                print(f"couldn't get duration for {filename}, probably corrupt, deleting {filename}")
+                FSL.delete(video_path)
+                
             max_duration = 11 * 60 # seconds
             min_duration = 5 * 60 # seconds
-            duration     = video.duration()
             if min_duration < duration < max_duration:
                 print('duration = ', duration)
                 frame_count = 0
