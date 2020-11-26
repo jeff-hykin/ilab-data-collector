@@ -57,7 +57,7 @@ class Video(object):
         if fps == 0:
             # failed, try backup plan of using ffmpeg directly
             duration_string = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.path], capture_output=True)
-            return float(duration_string)
+            return float(duration_string.stdout.decode('UTF-8'))
         total_number_of_frames = video_capture.get(cv2.CAP_PROP_FRAME_COUNT)
         duration = float(total_number_of_frames) / float(fps)
         video_capture.release()
