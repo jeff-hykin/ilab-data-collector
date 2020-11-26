@@ -40,8 +40,6 @@ while True:
                 "disgust": [],
                 "anger": [],
                 "contempt": [],
-                "none": [],
-                "uncertain": [],
             }
             max_duration = 11 * 60 # seconds
             min_duration = 5 * 60 # seconds
@@ -53,6 +51,8 @@ while True:
                     if frame_count % 200 == 0:
                         print('frame_count = ', frame_count)
                     frame_count += 1
+                    
+                    cropped_faces, face_dimensions = get_faces(each_frame)
                     emotion_values = {
                         "neutral": 0,
                         "disgust": 0,
@@ -62,16 +62,12 @@ while True:
                         "happy": 0,
                         "sad": 0,
                         "fear": 0,
-                        "none": 0,
-                        "uncertain": 0,
                     }
-                    cropped_faces, face_dimensions = get_faces(each_frame)
                     for each_face in cropped_faces:
                         emotion_data = get_emotion_data(preprocess_face(each_face))
-                        for each_emotion_name in emotion_values.keys():
-                            # opt for the largest value in the frame
-                            if emotion_data["probabilities"][each_emotion_name] > emotion_values:
-                                emotion_values = emotion_data["probabilities"][each_emotion_name]
+                        for each_emotion_name in emotion_values:
+                            if emotion_data["probabilities"][each_emotion_name] > emotion_values[each_emotion_name]:
+                                emotion_values[each_emotion_name] = emotion_data["probabilities"][each_emotion_name]
                     for each_emotion_name in emotion_strengths_per_frame.keys():
                         emotion_strengths_per_frame[each_emotion_name].append(emotion_values[each_emotion_name]/100.0)
                 
