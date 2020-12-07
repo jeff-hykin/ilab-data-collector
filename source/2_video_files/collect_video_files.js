@@ -19,7 +19,8 @@ process.on("unhandledRejection", downloadVideos)
 process.on("exit", downloadVideos)
 
 let numberOfConcurrentFunctions = 2 // number of simultaneous video downloads
-function downloadVideos() {
+function downloadVideos(...args) {
+    console.debug(`args is:`,args)
     ;[...Array(numberOfConcurrentFunctions)].forEach(async () => {
         while (true) {
             try {
@@ -39,6 +40,7 @@ function downloadVideos() {
                     // 
                     let listOfChoices = [...videoIdsNotYetAttempted]
                     let randomId = listOfChoices[Math.floor(Math.random() * listOfChoices.length-0.000001)]
+                    console.log(`chose ${randomId}`)
                     const sizeOfYoutubeId = 11
                     if (typeof randomId == 'string' && randomId.length == sizeOfYoutubeId) {
                         videoIdsNotYetAttempted.delete(randomId)
@@ -48,7 +50,13 @@ function downloadVideos() {
                         // try downloading the video
                         // 
                         try {
-                            await new Promise((resolve, reject)=>ytdl(randomId).pipe(fs.createWriteStream(`${PATHS.videoStorage}/${randomId}.mp4`)).on('close',resolve).on('error', reject))
+                            console.log(`trying to download ${randomId}`)
+                            await new Promise((resolve, reject)=>{
+                                // if it takes more than __ min to download, just don't
+                                setTimeout(()=>(console.log("download timed out"),reject()), 4 * 60 * 1000)
+                                // start the download
+                                ytdl(randomId).pipe(fs.createWriteStream(`${PATHS.videoStorage}/${randomId}.mp4`)).on('close',resolve).on('error', reject)
+                            })
                         } catch (error) {
                             console.log(`error downloading ${randomId}`)
                         }
