@@ -92,7 +92,7 @@ while True:
                         ) for each_start, each_end, each_confidence in clusters
                     ]
                     print('time_segments = ', time_segments)
-                    for each_start, each_end, each_confidence in clusters:
+                    for each_start, each_end, each_confidence in time_segments:
                         # because the threshold is 0.5, the confidence will always be
                         # above 0.5, this normalized confidence just puts the remaining +0.5
                         # on a 0-1 scale
